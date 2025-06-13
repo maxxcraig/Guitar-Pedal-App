@@ -13,6 +13,7 @@ public:
         overdriveToggle.setButtonText("Overdrive");
         overdriveToggle.addListener(this);
 
+
         addAndMakeVisible(gainSlider);
         gainSlider.setRange(1.0, 10.0, 0.1);
         gainSlider.setValue(5.0);
@@ -41,26 +42,41 @@ public:
     }
 
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& info) override
+
+{
+    juce::Logger::outputDebugString("Processing audio block");
+
+    auto totalInputChannels  = deviceManager.getCurrentAudioDevice()->getActiveInputChannels().countNumberOfSetBits();
+    auto totalOutputChannels = deviceManager.getCurrentAudioDevice()->getActiveOutputChannels().countNumberOfSetBits();
+
+    for (int channel = 0; channel < totalOutputChannels; ++channel)
     {
-        for (int channel = 0; channel < info.buffer->getNumChannels(); ++channel)
+        auto* outBuffer = info.buffer->getWritePointer(channel, info.startSample);
+
+        if (channel < totalInputChannels)
         {
-            auto* buffer = info.buffer->getWritePointer(channel, info.startSample);
+            const float* inBuffer = info.buffer->getReadPointer(channel, info.startSample);
+
             for (int i = 0; i < info.numSamples; ++i)
             {
-                float sample = std::sin(phase);
-                phase += 2.0 * juce::MathConstants<float>::pi * 440.0f / (float) currentSampleRate;
-                if (phase > 2.0f * juce::MathConstants<float>::pi)
-                    phase -= 2.0f * juce::MathConstants<float>::pi;
+                float sample = inBuffer[i];
 
                 if (overdriveEnabled)
                     sample = overdrive.processSample(sample);
 
                 sample = reverb.processSample(sample);
 
-                buffer[i] = sample;
+                outBuffer[i] = sample;
             }
         }
+        else
+        {
+            // Clear any output channels with no corresponding input
+            juce::FloatVectorOperations::clear(outBuffer, info.numSamples);
+        }
     }
+}
+
 
     void releaseResources() override {}
 
@@ -87,7 +103,6 @@ public:
 
 private:
     double currentSampleRate = 44100.0;
-    float phase = 0.0f;
     bool overdriveEnabled = true;
 
     Overdrive overdrive;
