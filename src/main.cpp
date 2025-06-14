@@ -14,17 +14,30 @@ public:
         overdriveToggle.addListener(this);
 
 
+        addAndMakeVisible(reverbToggle);
+        reverbToggle.setButtonText("Reverb");
+        reverbToggle.addListener(this);
+
         addAndMakeVisible(gainSlider);
-        gainSlider.setRange(1.0, 10.0, 0.1);
+        gainSlider.setRange(0, 10.0, 0.1);
         gainSlider.setValue(5.0);
         gainSlider.addListener(this);
         gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
 
         addAndMakeVisible(reverbSlider);
-        reverbSlider.setRange(0.0, 1.0, 0.01);
-        reverbSlider.setValue(0.3);
+        reverbSlider.setRange(0.0, 10, 0.1);
+        reverbSlider.setValue(5);
         reverbSlider.addListener(this);
         reverbSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+
+        // Gain Label
+        gainLabel.setText("Gain", juce::dontSendNotification);
+        gainLabel.attachToComponent(&gainSlider, false); //false = label goes above
+
+        // Reverb Label
+        reverbLabel.setText("Reverb", juce::dontSendNotification);
+        reverbLabel.attachToComponent(&reverbSlider, false);
+
 
         setAudioChannels(2, 2);
         setSize(400, 300);
@@ -64,7 +77,8 @@ public:
                 if (overdriveEnabled)
                     sample = overdrive.processSample(sample);
 
-                sample = reverb.processSample(sample);
+                if (reverbEnabled)
+                    sample = reverb.processSample(sample);
 
                 outBuffer[i] = sample;
             }
@@ -83,6 +97,7 @@ public:
     void resized() override
     {
         overdriveToggle.setBounds(20, 20, getWidth() - 40, 30);
+        reverbToggle.setBounds(110, 20, getWidth() - 40, 30);
         gainSlider.setBounds(20, 70, getWidth() - 40, 60);
         reverbSlider.setBounds(20, 150, getWidth() - 40, 60);
     }
@@ -91,6 +106,8 @@ public:
     {
         if (button == &overdriveToggle)
             overdriveEnabled = overdriveToggle.getToggleState();
+        else if (button == &reverbToggle)
+            reverbEnabled = reverbToggle.getToggleState();
     }
 
     void sliderValueChanged(juce::Slider* slider) override
@@ -103,15 +120,19 @@ public:
 
 private:
     double currentSampleRate = 44100.0;
-    bool overdriveEnabled = true;
+    bool overdriveEnabled = false;
+    bool reverbEnabled = false;
 
     Overdrive overdrive;
     CustomReverb reverb;
 
 
     juce::ToggleButton overdriveToggle;
+    juce::ToggleButton reverbToggle;
     juce::Slider gainSlider;
     juce::Slider reverbSlider;
+    juce::Label gainLabel;
+    juce::Label reverbLabel;
 };
 
 class MainApp  : public juce::JUCEApplication
@@ -125,7 +146,7 @@ public:
     {
         mainWindow.reset (new juce::DocumentWindow (
             getApplicationName(),
-            juce::Colours::lightgrey,
+            juce::Colours::blue,
             juce::DocumentWindow::allButtons
         ));
 
