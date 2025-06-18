@@ -1,13 +1,15 @@
 #pragma once
+
 #include "BaseEffects.h"
 #include <JuceHeader.h>
 
 class CustomReverb : public BaseEffect {
 public:
+    CustomReverb();
+    void setMix(float value);
     float processSample(float input) override;
     void setParameter(float value) override;
-    void setMix(float value);
-    void setSampleRate(double rate);
+    void setSampleRate(double rate) override;
 
 private:
     juce::Reverb reverb;

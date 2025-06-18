@@ -1,10 +1,18 @@
 #include "CustomReverb.h"
 
+CustomReverb::CustomReverb() {
+    params.roomSize = 0.5f;
+    params.damping = 0.5f;
+    params.wetLevel = 0.3f;
+    params.dryLevel = 0.7f;
+    params.width = 1.0f;
+    reverb.setParameters(params);
+}
+
 float CustomReverb::processSample(float input) {
     float in[] = { input };
-    float out[] = { 0.0f };
     reverb.processMono(in, 1);
-    return in[0] * (1.0f - params.wetLevel) + in[0] * params.wetLevel;
+    return in[0];
 }
 
 void CustomReverb::setParameter(float value) {

@@ -1,42 +1,25 @@
 #include <JuceHeader.h>
-#include "Overdrive.h"
-#include "CustomReverb.h"
+#include "pedalGUI/PedalComponent.h"
+#include "pedalSoundEffects/Overdrive.h"
+#include "pedalSoundEffects/CustomReverb.h"
 
-class MainComponent : public juce::AudioAppComponent,
-                      public juce::Button::Listener,
-                      public juce::Slider::Listener
+
+
+class MainComponent : public juce::AudioAppComponent
+                      
 {
 public:
     MainComponent()
     {
-        addAndMakeVisible(overdriveToggle);
-        overdriveToggle.setButtonText("Overdrive");
-        overdriveToggle.addListener(this);
+        overdrivePedal = std::make_unique<PedalComponent>("Overdrive", std::make_unique<Overdrive>());
+        addAndMakeVisible(*overdrivePedal);
+
+        
+        reverbPedal = std::make_unique<PedalComponent>("Reverb", std::make_unique<CustomReverb>());
+        addAndMakeVisible(*reverbPedal);
 
 
-        addAndMakeVisible(reverbToggle);
-        reverbToggle.setButtonText("Reverb");
-        reverbToggle.addListener(this);
 
-        addAndMakeVisible(gainSlider);
-        gainSlider.setRange(0, 10.0, 0.1);
-        gainSlider.setValue(5.0);
-        gainSlider.addListener(this);
-        gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-
-        addAndMakeVisible(reverbSlider);
-        reverbSlider.setRange(0.0, 10, 0.1);
-        reverbSlider.setValue(5);
-        reverbSlider.addListener(this);
-        reverbSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-
-        // Gain Label
-        gainLabel.setText("Gain", juce::dontSendNotification);
-        gainLabel.attachToComponent(&gainSlider, false); //false = label goes above
-
-        // Reverb Label
-        reverbLabel.setText("Reverb", juce::dontSendNotification);
-        reverbLabel.attachToComponent(&reverbSlider, false);
 
 
         setAudioChannels(2, 2);
@@ -48,11 +31,12 @@ public:
         shutdownAudio();
     }
 
-    void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override
-    {
+    void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override {
         currentSampleRate = sampleRate;
-        reverb.setSampleRate(sampleRate);
+        if (overdrivePedal) overdrivePedal->setSampleRate(sampleRate);
+        if (reverbPedal) reverbPedal->setSampleRate(sampleRate);
     }
+
 
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& info) override
 
@@ -74,11 +58,8 @@ public:
             {
                 float sample = inBuffer[i];
 
-                if (overdriveEnabled)
-                    sample = overdrive.processSample(sample);
-
-                if (reverbEnabled)
-                    sample = reverb.processSample(sample);
+                sample = overdrivePedal->isEnabled() ? overdrivePedal->processSample(sample) : sample;
+                sample = reverbPedal->isEnabled() ? reverbPedal->processSample(sample) : sample;
 
                 outBuffer[i] = sample;
             }
@@ -95,44 +76,43 @@ public:
     void releaseResources() override {}
 
     void resized() override
-    {
-        overdriveToggle.setBounds(20, 20, getWidth() - 40, 30);
-        reverbToggle.setBounds(110, 20, getWidth() - 40, 30);
-        gainSlider.setBounds(20, 70, getWidth() - 40, 60);
-        reverbSlider.setBounds(20, 150, getWidth() - 40, 60);
-    }
+{
+        const int pedalWidth = 150;
+        const int pedalHeight = 120;
+        const int padding = 10;
 
-    void buttonClicked(juce::Button* button) override
-    {
-        if (button == &overdriveToggle)
-            overdriveEnabled = overdriveToggle.getToggleState();
-        else if (button == &reverbToggle)
-            reverbEnabled = reverbToggle.getToggleState();
-    }
+        auto placePedal = [&](auto& pedal, int row, int col) {
+            if (pedal)
+                pedal->setBounds(padding + col * (pedalWidth + padding),
+                                padding + row * (pedalHeight + padding),
+                                pedalWidth, pedalHeight);
+        };
 
-    void sliderValueChanged(juce::Slider* slider) override
-    {
-        if (slider == &gainSlider)
-            overdrive.setGain(gainSlider.getValue());
-        else if (slider == &reverbSlider)
-            reverb.setMix(reverbSlider.getValue());
-    }
+        placePedal(overdrivePedal, 0, 0);
+        placePedal(reverbPedal, 0, 1);
+        placePedal(distortionPedal, 0, 2);
+        placePedal(bluesDriverPedal, 0, 3);
+        placePedal(delayPedal, 1, 0);
+        placePedal(tremoloPedal, 1, 1);
+        placePedal(chorusPedal, 1, 2);
+        placePedal(phaserPedal, 1, 3);
+}
+
+
+    
 
 private:
     double currentSampleRate = 44100.0;
-    bool overdriveEnabled = false;
-    bool reverbEnabled = false;
+    
+    std::unique_ptr<PedalComponent> overdrivePedal;
+    std::unique_ptr<PedalComponent> distortionPedal;
+    std::unique_ptr<PedalComponent> reverbPedal;
+    std::unique_ptr<PedalComponent> bluesDriverPedal;
+    std::unique_ptr<PedalComponent> delayPedal;
+    std::unique_ptr<PedalComponent> tremoloPedal;
+    std::unique_ptr<PedalComponent> chorusPedal;
+    std::unique_ptr<PedalComponent> phaserPedal;
 
-    Overdrive overdrive;
-    CustomReverb reverb;
-
-
-    juce::ToggleButton overdriveToggle;
-    juce::ToggleButton reverbToggle;
-    juce::Slider gainSlider;
-    juce::Slider reverbSlider;
-    juce::Label gainLabel;
-    juce::Label reverbLabel;
 };
 
 class MainApp  : public juce::JUCEApplication

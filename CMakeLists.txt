@@ -33,14 +33,16 @@ target_link_libraries(GuitarPedalApp
 target_sources(GuitarPedalApp
     PRIVATE
         src/main.cpp
-        src/dsp/Overdrive.cpp
-        src/dsp/CustomReverb.cpp
+        src/pedalGUI/PedalComponent.cpp 
+        src/pedalSoundEffects/Overdrive.cpp
+        src/pedalSoundEffects/CustomReverb.cpp
 )
 
 target_include_directories(GuitarPedalApp
     PRIVATE
         src
-        src/effects
+        src/pedalGUI
+        src/pedalSoundEffects
 )
 
 target_compile_features(GuitarPedalApp
