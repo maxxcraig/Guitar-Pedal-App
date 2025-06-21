@@ -39,7 +39,7 @@ public:
         addAndMakeVisible(*phaserPedal);
 
         setAudioChannels(2, 2);
-        setSize(800, 300);
+        setSize(1000, 600);
     }
 
     ~MainComponent() override
@@ -107,19 +107,37 @@ public:
     }
 
     void releaseResources() override {}
+    void paint(Graphics& g) override
+        {
+            g.fillAll(Colours::darkgrey);  // optional background
+
+            g.setColour(Colours::white);
+            g.setFont(Font(40.0f, Font::bold));
+            g.drawText("Guitar Pedal Board", getLocalBounds().removeFromTop(80),
+                    Justification::centred, true);
+        }
+
 
     void resized() override
     {
-        const int pedalWidth = 150;
-        const int pedalHeight = 120;
-        const int padding = 10;
+        const int pedalWidth = 200;
+        const int pedalHeight = 160;
+        const int padding = 20;
+
+        const int columns = 4;
+        const int titleHeight = 100;  // space for title at the top
+
+
+        auto totalWidth = columns * pedalWidth + (columns + 1) * padding;
+        int startX = (getWidth() - totalWidth) / 2 + padding;  // removes left gap
 
         auto placePedal = [&](auto& pedal, int row, int col) {
             if (pedal)
-                pedal->setBounds(padding + col * (pedalWidth + padding),
-                                 padding + row * (pedalHeight + padding),
-                                 pedalWidth, pedalHeight);
+                pedal->setBounds(startX + col * (pedalWidth + padding),
+                                titleHeight + padding + row * (pedalHeight + padding),  // ⬅️ offset down
+                                pedalWidth, pedalHeight);
         };
+
 
         placePedal(overdrivePedal, 0, 0);
         placePedal(reverbPedal, 0, 1);
@@ -130,6 +148,7 @@ public:
         placePedal(chorusPedal, 1, 2);
         placePedal(phaserPedal, 1, 3);
     }
+
 
 private:
     double currentSampleRate = 44100.0;
@@ -161,7 +180,8 @@ public:
 
         mainWindow->setUsingNativeTitleBar(true);
         mainWindow->setContentOwned(new MainComponent(), true);
-        mainWindow->centreWithSize(800, 300);
+        mainWindow->setResizable(true, false);
+        mainWindow->centreWithSize(1000, 600);
         mainWindow->setVisible(true);
     }
 

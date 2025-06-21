@@ -15,6 +15,8 @@ public:
 
     float processSample(float sample);
     void setSampleRate(double rate);
+    void paint(juce::Graphics& g) override;
+
 
 private:
     juce::String pedalName;
@@ -25,4 +27,6 @@ private:
     juce::ToggleButton toggleButton;
     juce::Slider controlSlider;
     juce::Label sliderLabel;
+    juce::Image pedalImage;
+
 };

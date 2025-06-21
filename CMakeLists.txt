@@ -50,3 +50,9 @@ target_compile_features(GuitarPedalApp
         cxx_std_17
 )
 
+add_custom_command(TARGET GuitarPedalApp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/resources"
+    "$<TARGET_BUNDLE_DIR:GuitarPedalApp>/Contents/MacOS/resources"
+)
+
