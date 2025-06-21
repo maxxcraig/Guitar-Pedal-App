@@ -3,30 +3,21 @@
 #include <JuceHeader.h>
 #include "BaseEffects.h"
 
-class PedalComponent : public juce::Component,
-                       public juce::Button::Listener,
-                       public juce::Slider::Listener
+class PedalComponent : public juce::Component
 {
 public:
-    PedalComponent(const juce::String& name, std::unique_ptr<BaseEffect> effect);
-    void resized() override;
-    void buttonClicked(juce::Button* button) override;
-    void sliderValueChanged(juce::Slider* slider) override;
+    PedalComponent(const juce::String& name, std::unique_ptr<BaseEffect> effect, const juce::String& imagePath);
+    virtual ~PedalComponent() = default;
+
+    void paint(juce::Graphics& g) override;
+    virtual void resized() override;
 
     float processSample(float sample);
     void setSampleRate(double rate);
-    void paint(juce::Graphics& g) override;
 
-
-private:
+protected:
     juce::String pedalName;
-    bool isActive = true;
-
+    juce::String imagePath; // <--- added to fix constructor usage
     std::unique_ptr<BaseEffect> effectProcessor;
-
-    juce::ToggleButton toggleButton;
-    juce::Slider controlSlider;
-    juce::Label sliderLabel;
     juce::Image pedalImage;
-
 };

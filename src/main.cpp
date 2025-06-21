@@ -1,5 +1,7 @@
 #include <JuceHeader.h>
 #include "pedalGUI/PedalComponent.h"
+#include "pedalGUI/OverdriveComponent.h"
+
 #include "pedalSoundEffects/Overdrive.h"
 #include "pedalSoundEffects/CustomReverb.h"
 #include "pedalSoundEffects/Chorus.h"
@@ -20,14 +22,15 @@ public:
                     juce::Logger::outputDebugString("Mic permission not granted!");
         });
 
-        overdrivePedal      = std::make_unique<PedalComponent>("Overdrive", std::make_unique<Overdrive>());
-        reverbPedal         = std::make_unique<PedalComponent>("Reverb", std::make_unique<CustomReverb>());
-        chorusPedal         = std::make_unique<PedalComponent>("Chorus", std::make_unique<Chorus>());
-        bluesDriverPedal    = std::make_unique<PedalComponent>("Blues Driver", std::make_unique<BluesDriver>());
-        distortionPedal     = std::make_unique<PedalComponent>("Distortion", std::make_unique<Distortion>());
-        delayPedal          = std::make_unique<PedalComponent>("Delay", std::make_unique<Delay>());
-        tremoloPedal        = std::make_unique<PedalComponent>("Tremolo", std::make_unique<Tremolo>());
-        phaserPedal         = std::make_unique<PedalComponent>("Phaser", std::make_unique<Phaser>());
+        overdrivePedal = std::make_unique<OverdriveComponent>();
+        reverbPedal         = std::make_unique<OverdriveComponent>();
+        chorusPedal         = std::make_unique<OverdriveComponent>();
+        bluesDriverPedal    = std::make_unique<OverdriveComponent>();
+        distortionPedal     = std::make_unique<OverdriveComponent>();
+        delayPedal          = std::make_unique<OverdriveComponent>();
+        tremoloPedal        = std::make_unique<OverdriveComponent>();
+        phaserPedal         = std::make_unique<OverdriveComponent>();
+
 
         addAndMakeVisible(*overdrivePedal);
         addAndMakeVisible(*reverbPedal);
@@ -153,14 +156,15 @@ public:
 private:
     double currentSampleRate = 44100.0;
 
-    std::unique_ptr<PedalComponent> overdrivePedal;
-    std::unique_ptr<PedalComponent> distortionPedal;
-    std::unique_ptr<PedalComponent> reverbPedal;
-    std::unique_ptr<PedalComponent> bluesDriverPedal;
-    std::unique_ptr<PedalComponent> delayPedal;
-    std::unique_ptr<PedalComponent> tremoloPedal;
-    std::unique_ptr<PedalComponent> chorusPedal;
-    std::unique_ptr<PedalComponent> phaserPedal;
+    std::unique_ptr<OverdriveComponent> overdrivePedal;
+    std::unique_ptr<OverdriveComponent> distortionPedal;
+    std::unique_ptr<OverdriveComponent> reverbPedal;
+    std::unique_ptr<OverdriveComponent> chorusPedal;
+    std::unique_ptr<OverdriveComponent> bluesDriverPedal;
+    std::unique_ptr<OverdriveComponent> delayPedal;
+    std::unique_ptr<OverdriveComponent> tremoloPedal;
+    std::unique_ptr<OverdriveComponent> phaserPedal;
+
 };
 
 class MainApp : public juce::JUCEApplication
